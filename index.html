@@ -1,1 +1,79 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloverPit - Roguelike Horror</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- Game HUD -->
+        <div id="hud">
+            <div class="hud-stat">HEALTH: <span id="stat-health">10</span></div>
+            <div class="hud-stat">COINS: <span id="stat-coins">50</span></div>
+            <div class="hud-stat">CLOVER: <span id="stat-clover">0</span></div>
+            <div class="hud-stat">ROUND: <span id="stat-round">1</span> (<span id="stat-rounds-rem">3</span> left)</div>
+            <div class="hud-stat">DEPOSIT: <span id="stat-deposit">0</span></div>
+            <div class="hud-stat">QUOTA: <span id="stat-quota">20</span></div>
+        </div>
+
+        <!-- Feedback Panel -->
+        <div id="feedback-panel">
+            <p>Welcome to CloverPit. Choose your action.</p>
+        </div>
+
+        <!-- Main Screen (Location Selector) -->
+        <div id="main-screen" class="game-screen active">
+            <h2>The Gloomy Hall</h2>
+            <p>Use the arrows to move to the **Casino** (Left) or the **ATM** (Right).</p>
+            <div class="environment-art">
+                <!-- Placeholder for pixel environment art -->
+                <p>[PIXEL ART: Hallway]</p>
+            </div>
+        </div>
+
+        <!-- Casino Screen -->
+        <div id="casino-screen" class="game-screen hidden">
+            <h2>The Slot Machine</h2>
+            <div id="slot-machine-grid">
+                <!-- 5x4 Grid will be populated by JS -->
+                <div class="slot-row" id="row-1"></div>
+                <div class="slot-row" id="row-2"></div>
+                <div class="slot-row" id="row-3"></div>
+                <div class="slot-row" id="row-4"></div>
+                <div class="slot-row" id="row-5"></div>
+            </div>
+            <div class="casino-options">
+                <button onclick="spinSlot(7, 7, 1)">
+                    7 COINS → 7 SPINS (+1 CLOVER)
+                </button>
+                <button onclick="spinSlot(3, 3, 2)">
+                    3 COINS → 3 SPINS (+2 CLOVER)
+                </button>
+            </div>
+            <p class="back-link" onclick="renderScreen('main')">← Back to Hall</p>
+        </div>
+
+        <!-- ATM Screen -->
+        <div id="atm-screen" class="game-screen hidden">
+            <h2>The ATM</h2>
+            <p>Deposit money to meet the **Quota of <span id="atm-quota-display">20</span>** (4% interest applied).</p>
+            <input type="number" id="deposit-input" min="1" value="1" placeholder="Amount to deposit">
+            <button onclick="depositMoney()">DEPOSIT</button>
+            <p class="back-link" onclick="renderScreen('main')">← Back to Hall</p>
+        </div>
+        
+        <!-- Movement Controls (Always visible) -->
+        <div id="movement-controls">
+            <button id="arrow-left" onclick="moveLeft()">←</button>
+            <button id="arrow-right" onclick="moveRight()">→</button>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
