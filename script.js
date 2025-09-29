@@ -1,8 +1,7 @@
-
 // --- GAME STATE ---
 const gameState = {
     // Player State
-    health: 10,
+    // health: 10, // REMOVED
     coins: 50,
     cloverTickets: 0,
     depositedMoney: 0,
@@ -21,15 +20,15 @@ const gameState = {
 // Slot Machine Configuration
 const SLOT_SYMBOLS = {
     'C': { rarity: 50, name: 'Coin' },      // Common, grants coins
-    'S': { rarity: 30, name: 'Skull' },     // Uncommon, minor health penalty
-    'H': { rarity: 15, name: 'Heart' },     // Rare, grants health
+    'S': { rarity: 30, name: 'Skull' },     // Uncommon, **Coin penalty**
+    'L': { rarity: 15, name: 'Lover' },     // Rare, grants Clover ticket bonus
     'W': { rarity: 5, name: 'Wild Card' },  // Very Rare, acts as any symbol
 };
 
 // --- CORE FUNCTIONS ---
 
 function updateHUD() {
-    document.getElementById('stat-health').textContent = gameState.health;
+    // document.getElementById('stat-health').textContent = gameState.health; // REMOVED
     document.getElementById('stat-coins').textContent = gameState.coins;
     document.getElementById('stat-clover').textContent = gameState.cloverTickets;
     document.getElementById('stat-round').textContent = gameState.round;
@@ -42,8 +41,9 @@ function updateHUD() {
         document.getElementById('atm-quota-display').textContent = gameState.currentQuota;
     }
 
-    if (gameState.health <= 0 || gameState.coins < 3 && gameState.roundsRemaining > 0) {
-        gameOver(gameState.health <= 0 ? "You died from the horrors." : "You are bankrupt.");
+    // New Bankruptcy Check (only check if the player can't afford the cheapest option)
+    if (gameState.coins < 3 && gameState.roundsRemaining > 0) {
+        gameOver("You are bankrupt and cannot continue playing the slots to meet the quota.");
     }
 }
 
@@ -105,8 +105,9 @@ function getRandomSymbol() {
 function generateSpinResults(spins) {
     let results = [];
     let feedback = "";
-    let totalCoins = 0;
-    let totalHealthChange = 0;
+    let totalCoinsGained = 0;
+    let totalCoinsLost = 0;
+    let cloverBonus = 0;
     
     // Simplification: In a full game, this would populate the 5x4 grid.
     // For the prototype, we generate 'spins' worth of 5x4 grids and check a simple win.
@@ -121,23 +122,34 @@ function generateSpinResults(spins) {
         }
         results.push(grid);
         
-        // **Simplified Winning Logic:** Check how many 'Skull' symbols appeared in the whole grid.
-        let skullCount = grid.flat().filter(s => s === 'S').length;
-        let coinCount = grid.flat().filter(s => s === 'C').length;
+        // --- SYMBOL EFFECT LOGIC ---
+        let flatGrid = grid.flat();
+        let skullCount = flatGrid.filter(s => s === 'S').length;
+        let coinCount = flatGrid.filter(s => s === 'C').length;
+        let cloverCount = flatGrid.filter(s => s === 'L').length;
         
+        // Skull Penalty (Coin Loss)
         if (skullCount >= 8) {
-            totalHealthChange -= 1;
-            feedback += " | The slots flash RED! -1 Health! ";
+            totalCoinsLost += 5;
+            feedback += " | The slots flash RED! -5 Coins! ";
         } else if (skullCount >= 5) {
-            totalHealthChange -= 0.5;
-            feedback += " | A chill runs down your spine. -0.5 Health. ";
+            totalCoinsLost += 2;
+            feedback += " | A chill runs down your spine. -2 Coins. ";
         }
         
-        totalCoins += Math.floor(coinCount / 4) + 1; // Base coin win
+        // Coin Gain
+        totalCoinsGained += Math.floor(coinCount / 4) + 1; // Base coin win
+        
+        // Lover Bonus (Clover Ticket Bonus)
+        if (cloverCount >= 4) {
+            cloverBonus += 1;
+            feedback += " | A lucky charm appears! +1 Clover Ticket! ";
+        }
     }
     
-    gameState.coins += totalCoins;
-    gameState.health += totalHealthChange;
+    gameState.coins += totalCoinsGained;
+    gameState.coins = Math.max(0, gameState.coins - totalCoinsLost); // Apply loss, minimum 0
+    gameState.cloverTickets += cloverBonus;
     
     // Update the visual grid (only showing the last spin for simplicity)
     const gridEl = document.getElementById('slot-machine-grid');
@@ -154,7 +166,7 @@ function generateSpinResults(spins) {
         gridEl.appendChild(rowEl);
     });
     
-    postFeedback(`Spins complete. Gained ${totalCoins} Coins. Health Change: ${totalHealthChange}. ${feedback}`);
+    postFeedback(`Spins complete. Gained ${totalCoinsGained} Coins, Lost ${totalCoinsLost} Coins. Bonus Clover Tickets: ${cloverBonus}. ${feedback}`);
 }
 
 function spinSlot(cost, spins, tickets) {
@@ -213,25 +225,21 @@ function endTurn() {
 function endRoundEvents() {
     let feedback = "--- END OF ROUND EVENTS ---";
     
-    // 1. Quota Check
-    if (gameState.quotaDeposit >= gameState.currentQuota) {
-        // Success
-        gameState.currentQuota = Math.round(gameState.currentQuota * 1.5); // Progressive challenge
-        feedback += ` | Quota SUCCESS! New Quota: ${gameState.currentQuota}.`;
-    } else {
-        // Failure - Penalty
-        const penalty = Math.max(1, Math.round(gameState.currentQuota * 0.1));
-        
-        // Penalty: lose health (primary penalty) and some coins (secondary)
-        gameState.health = Math.max(0, gameState.health - 1);
-        gameState.coins = Math.max(0, gameState.coins - penalty);
-        
-        feedback += ` | Quota FAILED! Lost 1 Health and ${penalty} Coins.`;
-    }
+    // 1. Quota Check - FAILURE IS NOW GAME OVER
+    if (gameState.quotaDeposit < gameState.currentQuota) {
+        // Failure - Terminal Condition
+        gameOver(`Quota FAILED! You only deposited ${gameState.quotaDeposit} of the required ${gameState.currentQuota} coins.`);
+        return; // Stop the round if failed
+    } 
+    
+    // Success
+    gameState.currentQuota = Math.round(gameState.currentQuota * 1.5); // Progressive challenge
+    feedback += ` | Quota SUCCESS! New Quota: ${gameState.currentQuota}.`;
 
     // 2. Apply Interest
-    const interest = gameState.depositedMoney * 0.04;
-    gameState.depositedMoney = gameState.depositedMoney * 1.04;
+    const interestRate = 0.04; // 4%
+    const interest = gameState.depositedMoney * interestRate;
+    gameState.depositedMoney = gameState.depositedMoney * (1 + interestRate);
     feedback += ` | Earned ${interest.toFixed(2)} interest on deposit.`;
 
     // 3. Reset and Increment
@@ -240,11 +248,6 @@ function endRoundEvents() {
     gameState.quotaDeposit = 0;
     
     postFeedback(feedback);
-    
-    // Check for game over again after penalties
-    if (gameState.health <= 0) {
-        gameOver("You died from the accumulated pressure and penalties.");
-    }
     
     // Ensure the player is back on the main screen after the round resets
     renderScreen('main');
@@ -284,7 +287,7 @@ function gameOver(reason) {
 window.onload = () => {
     updateHUD();
     renderScreen('main');
-    postFeedback("Welcome. Meet the Quota. Survive the Slots.");
+    postFeedback("Welcome. Meet the Quota within 3 actions. Failure is final.");
     
     // Initial Casino Grid Setup (a simple display)
     generateSpinResults(1); 
