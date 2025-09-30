@@ -13,8 +13,8 @@
         <div id="hud">
             <div class="hud-stat">COINS: <span id="stat-coins">50</span></div>
             <div class="hud-stat">CLOVER: <span id="stat-clover">0</span></div>
-            <div class="hud-stat">ROUND: <span id="stat-round">1</span> (<span id="stat-rounds-rem">3</span> left)</div>
-            <div class="hud-stat">DEPOSIT: <span id="stat-deposit">0</span></div>
+            <div class="hud-stat">ROUND: 1 (<span id="stat-rounds-rem">3</span> left)</div>
+            <div class="hud-stat">DEPOSIT: <span id="stat-deposit">0.00</span></div>
             <div class="hud-stat">QUOTA: <span id="stat-quota">20</span></div>
         </div>
 
@@ -34,22 +34,25 @@
 
         <!-- Casino Screen -->
         <div id="casino-screen" class="game-screen hidden">
-            <h2>The Slot Machine (4 Rows x 5 Lanes)</h2>
+            <h2 class="vhs-glitch">The CLOVERPIT Slot Machine</h2>
             
-            <div id="slot-machine-display">
-                <div id="slot-machine-grid">
-                    <!-- 4x5 Grid will be populated by JS -->
+            <div id="slot-machine-casing">
+                <div id="slot-machine-display">
+                    <div id="slot-machine-grid">
+                        <!-- 4x5 Grid will be populated by JS -->
+                    </div>
+                </div>
+                <!-- LEVER on the right side -->
+                <div id="lever-container">
+                    <button id="spin-button" onclick="executeSpin()" disabled>
+                        <div id="lever-handle"></div>
+                    </button>
+                    <p id="spins-left-display">0 LEFT</p>
                 </div>
             </div>
 
             <p id="selected-option-display">Select a spin option below to begin a round.</p>
 
-            <div class="casino-actions">
-                <button id="spin-button" onclick="executeSpin()" disabled>
-                    PUSH TO SPIN (<span id="spins-left-display">0</span> LEFT)
-                </button>
-            </div>
-            
             <div class="casino-options">
                 <button id="option-7-button" onclick="selectSpinOption(7, 7, 1)">
                     7 COINS → 7 SPINS (+1 CLOVER)
@@ -63,7 +66,7 @@
 
         <!-- ATM Screen -->
         <div id="atm-screen" class="game-screen hidden">
-            <h2>The ATM</h2>
+            <h2 class="vhs-glitch">The ATM</h2>
             <p>Deposit money to meet the **Quota of <span id="atm-quota-display">20</span>** (4% interest applied).</p>
             <div class="atm-actions">
                 <input type="number" id="deposit-input" min="1" value="1" placeholder="Amount to deposit">
