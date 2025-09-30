@@ -1,4 +1,3 @@
-
 /* Basic Reset and Pixel Font (Use a system monospace/retro font for simulation) */
 body {
     background-color: #000;
@@ -54,333 +53,11 @@ body {
     opacity: 1;
 }
 
-/* Slot Machine Styling (5x4 Grid) */
+/* Slot Machine Styling (4x5 Grid - 4 Rows, 5 Lanes/Columns) */
 #slot-machine-grid {
     display: flex;
     flex-direction: column;
-    width: 250px;
-    margin: 10px auto;
-    border: 2px solid #aaa;
-    background: #000;
-    padding: 5px;
-}
-
-.slot-row {
-    display: flex;
-    justify-content: space-around;
-    height: 40px;
-}
-
-.slot-symbol {
-    width: 40px;
-    height: 40px;
-    line-height: 40px;
-    font-size: 24px;
-    border: 1px solid #555;
-    background: #222;
-    margin: 1px;
-    /* Basic Symbol Colors (Could be sprites/emoji in a full game) */
-}
-
-/* Button & Input Styling */
-button {
-    background-color: #440000;
-    color: #ffaa00;
-    border: 2px solid #f00;
-    padding: 8px 12px;
-    cursor: pointer;
-    font-family: inherit;
-    margin: 5px;
-}
-
-button:hover {
-    background-color: #660000;
-}
-
-input[type="number"] {
-    background-color: #222;
-    color: #0f0;
-    border: 1px solid #0f0;
-    padding: 5px;
-    width: 100px;
-    text-align: center;
-    font-family: inherit;
-}
-
-/* Movement Controls */
-#movement-controls {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-#movement-controls button {
-    font-size: 20px;
-    padding: 10px 15px;
-}
-
-.back-link {
-    cursor: pointer;
-    text-decoration: underline;
-    color: #444;
-}
-
-/* Feedback Panel */
-#feedback-panel {
-    min-height: 30px;
-    background-color: #000;
-    border: 1px dashed #f00;
-    padding: 5px;
-    margin-bottom: 10px;
-    font-size: 12px;
-    text-align: left;
-}
-/* ... (Existing CSS) ... */
-
-/* ATM Screen Actions Grouping */
-.atm-actions {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 10px;
-}
-
-.atm-actions button {
-    margin-top: 10px;
-    width: 200px;
-}
-/* ... (Remaining CSS) ... */
-/* Basic Reset and Pixel Font (Use a system monospace/retro font for simulation) */
-body {
-    background-color: #000;
-    color: #fff;
-    font-family: 'Courier New', monospace; /* Placeholder for a pixel font */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-}
-
-#game-container {
-    width: 640px; /* Classic low-res size */
-    height: 480px;
-    border: 4px solid #f00; /* Horror theme border */
-    background-color: #111;
-    position: relative;
-    padding: 10px;
-}
-
-/* HUD Styling */
-#hud {
-    display: flex;
-    justify-content: space-between;
-    padding-bottom: 10px;
-    border-bottom: 2px dashed #444;
-    margin-bottom: 10px;
-    font-size: 14px;
-}
-
-.hud-stat {
-    padding: 2px 5px;
-    background-color: #330000;
-    border: 1px solid #f00;
-}
-
-/* Screen Management */
-.game-screen {
-    text-align: center;
-    padding: 20px;
-    height: 300px;
-    transition: opacity 0.5s;
-}
-
-.hidden {
-    display: none;
-    opacity: 0;
-}
-
-.active {
-    display: block;
-    opacity: 1;
-}
-
-/* Slot Machine Styling (5x4 Grid) */
-#slot-machine-grid {
-    display: flex;
-    flex-direction: column;
-    width: 250px;
-    margin: 10px auto;
-    border: 2px solid #aaa;
-    background: #000;
-    padding: 5px;
-}
-
-.slot-row {
-    display: flex;
-    justify-content: space-around;
-    height: 40px;
-}
-
-.slot-symbol {
-    width: 40px;
-    height: 40px;
-    line-height: 40px;
-    font-size: 24px; /* Large for pixel effect */
-    border: 1px solid #555;
-    background: #222;
-    margin: 1px;
-    text-shadow: 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000; /* Simple text "pixel" effect */
-}
-
-/* Button & Input Styling */
-button {
-    background-color: #440000;
-    color: #ffaa00;
-    border: 2px solid #f00;
-    padding: 8px 12px;
-    cursor: pointer;
-    font-family: inherit;
-    margin: 5px;
-}
-
-button:hover:not(:disabled) {
-    background-color: #660000;
-}
-
-button:disabled {
-    background-color: #222;
-    color: #444;
-    border-color: #333;
-    cursor: not-allowed;
-}
-
-input[type="number"] {
-    background-color: #222;
-    color: #0f0;
-    border: 1px solid #0f0;
-    padding: 5px;
-    width: 100px;
-    text-align: center;
-    font-family: inherit;
-}
-
-/* Movement Controls */
-#movement-controls {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-#movement-controls button {
-    font-size: 20px;
-    padding: 10px 15px;
-}
-
-/* ATM Screen Actions Grouping */
-.atm-actions {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 10px;
-}
-
-.atm-actions button {
-    margin-top: 10px;
-    width: 200px;
-}
-
-/* Casino Specific Styling */
-.casino-actions button {
-    font-size: 24px;
-    padding: 15px 30px;
-    background-color: #800; /* Prominent red for "Spin" */
-    border-color: #fff;
-    margin: 10px 0;
-}
-
-.casino-options {
-    margin-top: 15px;
-}
-
-.back-link {
-    cursor: pointer;
-    text-decoration: underline;
-    color: #444;
-}
-
-/* Feedback Panel */
-#feedback-panel {
-    min-height: 30px;
-    background-color: #000;
-    border: 1px dashed #f00;
-    padding: 5px;
-    margin-bottom: 10px;
-    font-size: 12px;
-    text-align: left;
-}
-/* Basic Reset and Pixel Font (Use a system monospace/retro font for simulation) */
-body {
-    background-color: #000;
-    color: #fff;
-    font-family: 'Courier New', monospace; /* Placeholder for a pixel font */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-}
-
-#game-container {
-    width: 640px; /* Classic low-res size */
-    height: 480px;
-    border: 4px solid #f00; /* Horror theme border */
-    background-color: #111;
-    position: relative;
-    padding: 10px;
-}
-
-/* HUD Styling */
-#hud {
-    display: flex;
-    justify-content: space-between;
-    padding-bottom: 10px;
-    border-bottom: 2px dashed #444;
-    margin-bottom: 10px;
-    font-size: 14px;
-}
-
-.hud-stat {
-    padding: 2px 5px;
-    background-color: #330000;
-    border: 1px solid #f00;
-}
-
-/* Screen Management */
-.game-screen {
-    text-align: center;
-    padding: 20px;
-    height: 300px;
-    transition: opacity 0.5s;
-}
-
-.hidden {
-    display: none;
-    opacity: 0;
-}
-
-.active {
-    display: block;
-    opacity: 1;
-}
-
-/* Slot Machine Styling (5x4 Grid) */
-#slot-machine-grid {
-    display: flex;
-    flex-direction: column;
-    width: 250px;
+    width: 300px; /* Adjusted width for 5 columns */
     margin: 10px auto;
     border: 2px solid #aaa;
     background: #000;
@@ -403,7 +80,7 @@ body {
     margin: 1px;
     text-shadow: 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000;
     color: #fff;
-    transition: background-color 0.1s; /* For flashing */
+    transition: background-color 0.1s; 
 }
 
 /* New CSS for Animations */
@@ -421,7 +98,28 @@ body {
     100% { transform: scale(1); }
 }
 
-/* Button & Input Styling (No change from previous) */
+/* New CSS for Coin Animation */
+.floating-coin {
+    position: absolute;
+    font-size: 24px;
+    opacity: 0;
+    color: #ffcc00; /* Gold color */
+    z-index: 50;
+    animation: floatUpAndFade 1.5s ease-out forwards;
+}
+
+@keyframes floatUpAndFade {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.8);
+    }
+}
+
+/* Button & Input Styling */
 button {
     background-color: #440000;
     color: #ffaa00;
@@ -507,58 +205,5 @@ input[type="number"] {
     margin-bottom: 10px;
     font-size: 12px;
     text-align: left;
+    position: relative; /* Needed for absolute positioning of floating coins */
 }
-/* ... (Existing CSS) ... */
-
-/* New CSS for Coin Animation */
-.floating-coin {
-    position: absolute;
-    font-size: 24px;
-    opacity: 0;
-    color: #ffcc00; /* Gold color */
-    z-index: 50;
-    animation: floatUpAndFade 1.5s ease-out forwards;
-}
-
-@keyframes floatUpAndFade {
-    0% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(-50px) scale(0.8);
-    }
-}
-/* ... (Existing CSS) ... */
-
-/* Slot Machine Styling (4x5 Grid - 4 Rows, 5 Lanes/Columns) */
-#slot-machine-grid {
-    display: flex;
-    flex-direction: column;
-    width: 300px; /* Adjusted width for 5 columns */
-    margin: 10px auto;
-    border: 2px solid #aaa;
-    background: #000;
-    padding: 5px;
-}
-
-.slot-row {
-    display: flex;
-    justify-content: space-around;
-    height: 40px;
-}
-
-.slot-symbol {
-    width: 40px;
-    height: 40px;
-    line-height: 40px;
-    font-size: 24px;
-    border: 1px solid #555;
-    background: #222;
-    margin: 1px;
-    text-shadow: 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000;
-    color: #fff;
-    transition: background-color 0.1s; 
-}
-/* ... (Remaining CSS) ... */
