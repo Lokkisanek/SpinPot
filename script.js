@@ -37,19 +37,16 @@ const NEW_TOTAL_WEIGHT = 1000;
 const INTEREST_RATE = 0.04; 
 const PENALTY_CHANCE = 0.04; 
 
-// Win Patterns (3-row masks for 4x5 grid, allowing start at Row 0 or Row 1)
+// Win Patterns (3-row masks for 4x5 grid, allowing anchor at Row 0 or Row 1)
 const WIN_PATTERNS = [
-    { type: 'width', multiplier: 1.0, pattern: [[0, 0, 0, 0, 0], [0, 1, 1, 1, 0], [0, 0, 0, 0, 0]] }, 
-    { type: 'length', multiplier: 1.0, pattern: [[0, 0, 1, 0, 0], [0, 0, 1, 0, 0], [0, 0, 1, 0, 0]] }, 
-    { type: 'diagonal', multiplier: 1.0, pattern: [[0, 0, 0, 1, 0], [0, 0, 1, 0, 0], [0, 1, 0, 0, 0]] }, 
-    { type: 'Horizontal -L', multiplier: 2.0, pattern: [[0, 0, 0, 0, 0], [0, 1, 1, 1, 1], [0, 0, 0, 0, 0]] }, 
-    { type: 'Horizontal -XL', multiplier: 3.0, pattern: [[0, 0, 0, 0, 0], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]] }, 
+    // Patterns that are 3x5 or less
     { type: 'now', multiplier: 4.0, pattern: [[0, 0, 1, 0, 0], [0, 1, 0, 1, 0], [1, 0, 0, 0, 1]] }, 
     { type: 'Zag', multiplier: 4.0, pattern: [[1, 0, 0, 0, 1], [0, 1, 0, 1, 0], [0, 0, 1, 0, 0]] }, 
     { type: 'stomach', multiplier: 7.0, pattern: [[0, 0, 1, 0, 0], [0, 1, 0, 1, 0], [1, 1, 1, 1, 1]] }, 
     { type: 'under', multiplier: 7.0, pattern: [[1, 1, 1, 1, 1], [0, 1, 0, 1, 0], [0, 0, 1, 0, 0]] }, 
     { type: 'eye', multiplier: 8.0, pattern: [[0, 1, 1, 1, 0], [1, 1, 0, 1, 1], [0, 1, 1, 1, 0]] }, 
-    { type: 'jackpot', multiplier: 10.0, pattern: [[1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1]] }, 
+    // Patterns that are 4x5
+    { type: 'jackpot', multiplier: 10.0, pattern: [[1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1]] }, 
 ];
 
 // --- CORE FUNCTIONS ---
@@ -75,7 +72,7 @@ function updateHUD() {
     
     // Casino button logic
     spinButton.disabled = !canSpin;
-    spinsLeftDisplay.textContent = gameState.currentSpinOption.spinsLeft;
+    spinsLeftDisplay.textContent = `${gameState.currentSpinOption.spinsLeft} LEFT`;
     option7Button.disabled = !canSelect || gameState.currentSpinOption.spinsLeft > 0 || gameState.coins < 7;
     option3Button.disabled = !canSelect || gameState.currentSpinOption.spinsLeft > 0 || gameState.coins < 3;
 
@@ -85,7 +82,7 @@ function updateHUD() {
         optionDisplay.textContent = "Select a spin option below to begin a round.";
     }
 
-    // Movement lock (Blocked if controls disabled OR if spins are pending)
+    // Movement lock
     document.getElementById('arrow-left').disabled = gameState.controlsDisabled || gameState.currentSpinOption.spinsLeft > 0;
     document.getElementById('arrow-right').disabled = gameState.controlsDisabled || gameState.currentSpinOption.spinsLeft > 0;
     
@@ -209,32 +206,103 @@ function getRandomSymbolNew() {
 }
 
 /**
- * Checks the generated grid for any winning patterns and returns the total multiplier and winning cells.
+ * Checks for continuous identical symbols (3, 4, or 5 in a row/column/diagonal) anywhere in the grid.
  */
-function checkPatterns(grid) {
+function checkContinuousLines(grid) {
+    let totalMultiplier = 0;
+    let winningCells = [];
+    let feedback = "";
+
+    // Multiplier map for continuous wins
+    const continuousMultipliers = {
+        3: 1.0, 
+        4: 2.0, 
+        5: 3.0
+    };
+
+    const directions = [
+        // Horizontal
+        { name: 'Row', dR: 0, dC: 1, maxStartR: ROWS, maxStartC: COLS - 2, maxLen: COLS },
+        // Vertical
+        { name: 'Col', dR: 1, dC: 0, maxStartR: ROWS - 2, maxStartC: COLS, maxLen: ROWS },
+        // Diagonal Down-Right
+        { name: 'DiagDR', dR: 1, dC: 1, maxStartR: ROWS - 2, maxStartC: COLS - 2, maxLen: Math.min(ROWS, COLS) },
+        // Diagonal Down-Left
+        { name: 'DiagDL', dR: 1, dC: -1, maxStartR: ROWS - 2, maxStartC: COLS - 1, maxLen: Math.min(ROWS, COLS) }
+    ];
+
+    const allSymbols = Object.keys(NEW_SLOT_SYMBOLS);
+
+    for (const { name, dR, dC, maxStartR, maxStartC, maxLen } of directions) {
+        for (let r = 0; r < maxStartR; r++) {
+            for (let c = 0; c < maxStartC; c++) {
+                
+                const startSymbol = grid[r][c];
+                if (!allSymbols.includes(startSymbol)) continue; 
+
+                let currentLine = [{r, c, flatIndex: r * COLS + c}];
+
+                for (let i = 1; i < maxLen; i++) {
+                    const nextR = r + i * dR;
+                    const nextC = c + i * dC;
+
+                    if (nextR >= ROWS || nextR < 0 || nextC >= COLS || nextC < 0) {
+                        break;
+                    }
+
+                    if (grid[nextR][nextC] === startSymbol) {
+                        currentLine.push({r: nextR, c: nextC, flatIndex: nextR * COLS + nextC});
+                    } else {
+                        break;
+                    }
+                }
+
+                if (currentLine.length >= 3) {
+                    for (let len = currentLine.length; len >= 3; len--) {
+                        if (continuousMultipliers[len]) {
+                            const winMultiplier = continuousMultipliers[len] * NEW_SLOT_SYMBOLS[startSymbol].multiplier;
+                            
+                            if (len === currentLine.length) { 
+                                totalMultiplier += winMultiplier;
+                                currentLine.forEach(cell => winningCells.push(cell.flatIndex));
+                                feedback += ` | ${startSymbol} ${name} ${len}-in-a-row x${winMultiplier.toFixed(1)} win!`;
+                            }
+                            
+                            break; 
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return { totalMultiplier, cells: [...new Set(winningCells)], feedback };
+}
+
+
+/**
+ * Checks the generated grid for any *complex* winning patterns (anchored masks).
+ */
+function checkComplexPatterns(grid) {
     let totalMultiplier = 0;
     let winningCells = [];
     let feedback = "";
 
     const allSymbols = Object.keys(NEW_SLOT_SYMBOLS);
     
-    // Check all possible symbol types
     for (const mainSymbol of allSymbols) {
         
-        // Check every single pattern
         for (const patternData of WIN_PATTERNS) {
             
             const pRows = patternData.pattern.length; 
             const pCols = patternData.pattern[0].length; 
             
-            // Iterate through all possible starting positions (Top-Left corner of pattern)
             for (let startR = 0; startR <= ROWS - pRows; startR++) { 
                 for (let startC = 0; startC <= COLS - pCols; startC++) { 
                     
                     let matches = true;
                     let currentPatternCells = [];
                     
-                    // Check for pattern match at (startR, startC)
                     for (let r = 0; r < pRows; r++) {
                         for (let c = 0; c < pCols; c++) {
                             const patternVal = patternData.pattern[r][c];
@@ -242,7 +310,7 @@ function checkPatterns(grid) {
                             const gridC = startC + c;
                             
                             if (patternVal === 1) { // Required symbol
-                                if (grid[gridR][gridC] !== mainSymbol) {
+                                if (gridR >= ROWS || gridC >= COLS || grid[gridR][gridC] !== mainSymbol) {
                                     matches = false;
                                     break;
                                 }
@@ -252,7 +320,6 @@ function checkPatterns(grid) {
                         if (!matches) break;
                     }
                     
-                    // If match found, apply multiplier and add winning cells
                     if (matches) {
                         const winMultiplier = patternData.multiplier * NEW_SLOT_SYMBOLS[mainSymbol].multiplier;
                         totalMultiplier += winMultiplier;
@@ -267,7 +334,7 @@ function checkPatterns(grid) {
 
     return {
         multiplier: totalMultiplier, 
-        cells: [...new Set(winningCells)], // Unique winning cell indices
+        cells: winningCells,
         feedback: feedback
     };
 }
@@ -278,9 +345,9 @@ function checkPatterns(grid) {
  */
 function calculateOneSpin() {
     let grid = [];
-    for (let r = 0; r < ROWS; r++) { // 4 Rows
+    for (let r = 0; r < ROWS; r++) { 
         let row = [];
-        for (let c = 0; c < COLS; c++) { // 5 Cols
+        for (let c = 0; c < COLS; c++) { 
             row.push(getRandomSymbolNew());
         }
         grid.push(row);
@@ -288,13 +355,22 @@ function calculateOneSpin() {
     
     let totalCoinsGained = 0;
     let totalCoinsLost = 0;
+    let allWinningCells = [];
 
-    // 1. Check for Win Patterns
-    const { multiplier, cells, feedback } = checkPatterns(grid);
+    // 1. Check for Simple Continuous Lines
+    const lineResults = checkContinuousLines(grid);
+    totalCoinsGained += Math.round(lineResults.totalMultiplier);
+    allWinningCells.push(...lineResults.cells);
     
-    totalCoinsGained = Math.round(multiplier); 
+    // 2. Check for Complex/Shaped Patterns
+    const complexResults = checkComplexPatterns(grid);
+    totalCoinsGained += Math.round(complexResults.multiplier);
+    allWinningCells.push(...complexResults.cells);
     
-    // 2. Apply '6' (Loss) Symbol Modifier
+    const totalMultiplier = lineResults.totalMultiplier + complexResults.multiplier;
+    const winFeedback = lineResults.feedback + complexResults.feedback;
+    
+    // 3. Apply '6' (Loss) Symbol Modifier
     let lossFeedback = "";
     if (Math.random() < PENALTY_CHANCE) {
         let penaltyAmount = Math.max(1, Math.round(gameState.coins * 0.1));
@@ -306,8 +382,8 @@ function calculateOneSpin() {
         totalCoinsGained, 
         totalCoinsLost, 
         grid, 
-        winningSymbols: cells,
-        feedback: `Payout: ${totalCoinsGained} Coins. Multiplier: x${multiplier.toFixed(1)}` + feedback + lossFeedback
+        winningSymbols: [...new Set(allWinningCells)], // Ensure unique cells
+        feedback: `Payout: ${totalCoinsGained} Coins. Multiplier: x${totalMultiplier.toFixed(1)}` + winFeedback + lossFeedback
     };
 }
 
@@ -337,7 +413,7 @@ function updateVisualGrid(grid, winningIndices = []) {
                     symbolEl.classList.remove('win-flash'); 
                 }
             } else {
-                symbolEl.textContent = key; // Use the key for the random characters during spin
+                symbolEl.textContent = key; 
             }
             
             rowEl.appendChild(symbolEl);
@@ -352,6 +428,10 @@ function updateVisualGrid(grid, winningIndices = []) {
 function animateSpinSequence(results) {
     gameState.controlsDisabled = true;
     updateHUD();
+    
+    // Animate Lever Pull Down
+    const leverHandle = document.getElementById('spin-button');
+    if (leverHandle) leverHandle.classList.add('lever-pulled');
     
     const spinDuration = 500; 
     let startTime = Date.now();
@@ -368,9 +448,9 @@ function animateSpinSequence(results) {
         }
         
         let randomGrid = [];
-        for (let r = 0; r < ROWS; r++) { // 4 Rows
+        for (let r = 0; r < ROWS; r++) { 
             let row = [];
-            for (let c = 0; c < COLS; c++) { // 5 Cols
+            for (let c = 0; c < COLS; c++) { 
                 row.push(allSymbolDisplays[Math.floor(Math.random() * allSymbolDisplays.length)]);
             }
             randomGrid.push(row);
@@ -382,6 +462,10 @@ function animateSpinSequence(results) {
 function stopSpinAndCalculate(results) {
     // 2. Stop Spin and Display Final Grid
     updateVisualGrid(results.grid, results.winningSymbols);
+
+    // Animate Lever Pull Up
+    const leverHandle = document.getElementById('spin-button');
+    if (leverHandle) leverHandle.classList.remove('lever-pulled');
 
     // 3. Apply Payout and Animate Coin Gain
     setTimeout(() => {
@@ -604,6 +688,5 @@ window.onload = () => {
     renderScreen('main');
     postFeedback("Welcome. Meet the Quota within 3 Casino actions. ATM deposits are free.");
     
-    // Initial Casino Grid Setup 
     updateVisualGrid(Array(ROWS).fill(Array(COLS).fill(' ')));
 };
