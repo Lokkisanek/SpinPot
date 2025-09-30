@@ -39,7 +39,6 @@
             <div id="slot-machine-display">
                 <div id="slot-machine-grid">
                     <!-- 4x5 Grid will be populated by JS -->
-                    <!-- The inner structure will be rows containing 5 symbols -->
                 </div>
             </div>
 
@@ -62,7 +61,7 @@
             <p class="back-link" onclick="renderScreen('main')">← Back to Hall</p>
         </div>
 
-        <!-- ATM Screen (No change) -->
+        <!-- ATM Screen -->
         <div id="atm-screen" class="game-screen hidden">
             <h2>The ATM</h2>
             <p>Deposit money to meet the **Quota of <span id="atm-quota-display">20</span>** (4% interest applied).</p>
@@ -74,7 +73,7 @@
             <p class="back-link" onclick="renderScreen('main')">← Back to Hall</p>
         </div>
         
-        <!-- Movement Controls (No change) -->
+        <!-- Movement Controls (Always visible) -->
         <div id="movement-controls">
             <button id="arrow-left" onclick="moveLeft()">←</button>
             <button id="arrow-right" onclick="moveRight()">→</button>
